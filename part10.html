@@ -108,7 +108,7 @@
         //  Some stars to collect, 12 in total, evenly spaced 70 pixels apart along the x axis
         stars = this.physics.add.group({
           key: "star",
-          repeat: 11,
+          repeat: 4,
           setXY: { x: 12, y: 0, stepX: 70 },
         });
 
@@ -119,13 +119,24 @@
 
         carrots = this.physics.add.group({
           key: "carrot",
-          repeat: 11,
+          repeat: 5,
           setXY: { x: 0, y: 0, stepX: 120 },
         });
 
         carrots.children.iterate(function (child) {
           //  Give each star a slightly different bounce
           child.setBounceY(Phaser.Math.FloatBetween(0.2, 0.4));
+        });
+
+        hamburgers = this.physics.add.group({
+          key: "hamburger",
+          repeat: 3,
+          setXY: { x: 40, y: 0, stepX: 210 },
+        });
+
+        hamburgers.children.iterate(function (child) {
+          //  Give each star a slightly different bounce
+          child.setBounceY(Phaser.Math.FloatBetween(0.2, 0.9));
         });
 
         bombs = this.physics.add.group();
@@ -140,12 +151,21 @@
         this.physics.add.collider(player, platforms);
         this.physics.add.collider(stars, platforms);
         this.physics.add.collider(carrots, platforms);
+        this.physics.add.collider(hamburgers, platforms);
         this.physics.add.collider(bombs, platforms);
 
         //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
         this.physics.add.overlap(player, stars, collectStar, null, this);
 
         this.physics.add.overlap(player, carrots, collectCarrot, null, this);
+
+        this.physics.add.overlap(
+          player,
+          hamburgers,
+          collectHamburger,
+          null,
+          this
+        );
 
         this.physics.add.collider(player, bombs, hitBomb, null, this);
       }
@@ -178,12 +198,42 @@
         star.disableBody(true, true);
 
         //  Add and update the score
-        score += 10;
+        score -= 5;
         scoreText.setText("Score: " + score);
 
         if (stars.countActive(true) === 0) {
           //  A new batch of stars to collect
           stars.children.iterate(function (child) {
+            child.enableBody(true, child.x, 0, true, true);
+          });
+        }
+      }
+
+      function collectCarrot(player, carrot) {
+        carrot.disableBody(true, true);
+
+        //  Add and update the score
+        score -= 10;
+        scoreText.setText("Score: " + score);
+
+        if (carrots.countActive(true) === 0) {
+          //  A new batch of stars to collect
+          carrots.children.iterate(function (child) {
+            child.enableBody(true, child.x, 0, true, true);
+          });
+        }
+      }
+
+      function collectHamburger(player, hamburger) {
+        hamburger.disableBody(true, true);
+
+        //  Add and update the score
+        score += 25;
+        scoreText.setText("Score: " + score);
+
+        if (hamburgers.countActive(true) === 0) {
+          //  A new batch of stars to collect
+          hamburgers.children.iterate(function (child) {
             child.enableBody(true, child.x, 0, true, true);
           });
 
@@ -198,20 +248,6 @@
           bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
           bomb.allowGravity = false;
         }
-      }
-
-      function collectCarrot(player, carrot) {
-        carrot.disableBody(true, true);
-
-        //  Add and update the score
-        score += 10;
-        scoreText.setText("Score: " + score);
-
-        if (carrots.countActive(true) === 0) {
-          //  A new batch of stars to collect
-          carrots.children.iterate(function (child) {
-            child.enableBody(true, child.x, 0, true, true);
-          });
       }
 
       function hitBomb(player, bomb) {
